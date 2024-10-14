@@ -1,4 +1,5 @@
 {
+    "function_name": "test_function",
     "function": "a*sin(x) + b*x^2 - c*x + d",
     "parameters": {
       "a": 1.0,
