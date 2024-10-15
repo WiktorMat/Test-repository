@@ -45,4 +45,35 @@ class SVfitIntegratorMarkovChain:
 
         ###Definicja reszty parametrów self.X = X (z odpowiednimi warunkami)###
 
+        ###             ###            ###             ###             ###
+
+
+    def __del__(self):
+        # Destruktor
+        if self.tree_file_ is not None:
+            self.tree_file_.close()
+            self.tree_file_ = None
+    
+    def setIntegrand(self, g, xl, xu):
+        # Przypisanie wartości do xMin_ i xMax_
+        self.xMin_ = xl
+        self.xMax_ = xu
+
+        # Zmiana rozmiaru list epsilon0s_ i epsilon_
+        self.epsilon0s_ = [self.epsilon0_] * self.numDimensions_
+        self.epsilon_ = [0.0] * self.numDimensions_
+
+        # Zmiana rozmiaru list p_, q_, u_, pProposal_, qProposal_
+        self.p_ = [0.0] * (2 * self.numDimensions_)
+        self.q_ = [0.0] * self.numDimensions_
+        self.u_ = [0.0] * (2 * self.numDimensions_)
+        self.pProposal_ = [0.0] * self.numDimensions_
+        self.qProposal_ = [0.0] * self.numDimensions_
+
+        # Zmiana rozmiaru list probSum_ i integral_
+        self.probSum_ = [0.0] * (self.numChains_ * self.numBatches_)
+        self.integral_ = [0.0] * (self.numChains_ * self.numBatches_)
+
+        # Przypisanie wartości do integrand_
+        self.integrand_ = g
     
