@@ -1,6 +1,12 @@
 SVfitIntegratorMarkovChain:
     *kod sam się pisze z copilotem zasadniczo, bo i większość kodu jest rzeczywiście prosta
+    *nazwy zmiennych znormalizować
     *trzeba zadbać o podefiniowanie wszystkiego w numpy dla wydajności
     *trzeba też się zastanowić jak eksportować pliki, jeśli nie chcemy roota (jedna z propozycji to h5py), ale root może też będzie ok? Trzeba poczytać jego dokumentację
     *czym jest typ gPtr_C? (linijka 139 w oryginalnym kodzie)
     *Breit-Wigner zamienić na inny rozkład albo zaimportować (linijka 452)
+
+ClassicSVfitIntegrand:
+    *Use_SVFITTF - gdzie jest definiowane?
+    *hadTauTF i clone (linijka 113)
+    *spojrzeć na to jak podnosimy błędy - pytanie czy chcemy, żeby błąd przerywał program (czyli czy chcemy robić print czy raise X_Error)
