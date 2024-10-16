@@ -212,55 +212,39 @@ class SVfitIntegratorMarkovChain:
     
             self.ChainsRun += 1
         
-        ### Jeszcze do przepisania:
-        
-        for ( unsigned idxBatch = 0; idxBatch < probSum_.size(); ++idxBatch ) {
-    integral_[idxBatch] = probSum_[idxBatch]/m;
-    if ( verbosity_ >= 1 ) std::cout << "integral[" << idxBatch << "] = " << integral_[idxBatch] << std::endl;
-  }
+        for idxBatch in range(len(self.probSum)):
+            self.integral[idxBatch] = self.probSum[idxBatch] / m
+            if self.verbosity >= 1:
+                print(f"integral[{idxBatch}] = {self.integral[idxBatch]}")
 
-//--- compute integral value and uncertainty
-//   (eqs. (6.39) and (6.40) in [1])
-  integral = 0.;
-  for ( unsigned i = 0; i < k; ++i ) {
-    integral += integral_[i];
-  }
-  integral /= k;
-
-  integralErr = 0.;
-  for ( unsigned i = 0; i < k; ++i ) {
-    integralErr += square(integral_[i] - integral);
-  }
-  if ( k >= 2 ) integralErr /= (k*(k - 1));
-  integralErr = TMath::Sqrt(integralErr);
-
-  if ( verbosity_ >= 1 ) std::cout << "--> returning integral = " << integral << " +/- " << integralErr << std::endl;
-
-  errorFlag_ = ( numChainsRun_ >= 0.5*numChains_ ) ? 0 : 1;
-
-  ++numIntegrationCalls_;
-  numMovesTotal_accepted_ += numMoves_accepted_;
-  numMovesTotal_rejected_ += numMoves_rejected_;
-
-  if ( tree_ ) {
-    tree_->Write();
-  }
-  delete treeFile_;
-  treeFile_ = 0;
-  //delete tree_;
-  tree_ = 0;
-
-  if ( verbosity_ >= 1 ) print(std::cout);
-}
-
-
-        
-        ###
-
-
-
-
-        #Placeholder dla właściwego kodu
+        #compute integral value and uncertainty
+        #(eqs. (6.39) and (6.40) in [1])
         integral = 0.0
+        for i in range(k):
+            integral += self.integral[i]
+        integral /= k
+
         integralErr = 0.0
-        return integral, integralErr
+        for i in range(k):
+            integralErr += (self.integral[i] - integral) ** 2
+        if k >= 2:
+            integralErr /= (k * (k - 1))
+        integralErr = np.sqrt(integralErr)
+        
+        if self.verbosity >= 1:
+            print(f"--> returning integral = {integral} +/- {integralErr}")
+        
+        self.errorFlag = 0 if self.numChainsRun >= 0.5 * self.numChains else 1
+
+        ### Tu wracamy
+        self.num_integration_calls_ +=1
+        self.num_moves_total_accepted_ += self.num_moves_accepted
+        self.num_moves_total_rejected_ += self.num_moves_rejected
+
+        if self.tree_:  #Zapisywanie do pliku
+            self.tree_.Write()
+        self.treeFile_ = None
+        self.tree_ = None
+
+        if self.verbosity >= 1:
+            self.print()
