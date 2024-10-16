@@ -1,0 +1,6 @@
+SVfitIntegratorMarkovChain:
+    *kod sam się pisze z copilotem zasadniczo, bo i większość kodu jest rzeczywiście prosta
+    *trzeba zadbać o podefiniowanie wszystkiego w numpy dla wydajności
+    *trzeba też się zastanowić jak eksportować pliki, jeśli nie chcemy roota (jedna z propozycji to h5py), ale root może też będzie ok? Trzeba poczytać jego dokumentację
+    *czym jest typ gPtr_C? (linijka 139 w oryginalnym kodzie)
+    *Breit-Wigner zamienić na inny rozkład albo zaimportować (linijka 452)

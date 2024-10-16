@@ -41,12 +41,17 @@ class SVfitIntegratorMarkovChain:
 
         # Parametry definiujące liczbę ruchów stochastycznych na iterację
         self.num_iter_burnin = num_iter_burnin
-        self.num_iter_sampling = num_iter_sampling
+        self.numIterSampling = num_iter_sampling
+        self.num_iter_sim_annealing_phase1 = num_iter_sim_annealing_phase1
+        self.num_iter_sim_annealing_phase2 = num_iter_sim_annealing_phase2
 
-        ###Definicja reszty parametrów self.X = X (z odpowiednimi warunkami)###
-
-        ###             ###            ###             ###             ###
-
+        self.T0 = T0
+        self.alpha = alpha
+        self.numChains = num_chains
+        self.numBatches = num_batches
+        self.epsilon0 = epsilon0
+        self.nu = nu
+        self.verbosity = verbosity
 
     def __del__(self):
         # Destruktor
@@ -54,25 +59,26 @@ class SVfitIntegratorMarkovChain:
             self.tree_file_.close()
             self.tree_file_ = None
     
-    def setIntegrand(self, g, xl, xu):  ### <--- Tu wrócić, bo nie do końca rozumiem tę część kodu w cpp, ale to chyba tylko jakaś inicjalizacja
+    def setIntegrand(self, g, xl, xu, d):  ### <--- Tu wrócić, bo nie do końca rozumiem tę część kodu w cpp, ale to chyba tylko jakaś inicjalizacja
+        self.numDimensions = d
         # Przypisanie wartości do xMin_ i xMax_
         self.xMin = xl
         self.xMax = xu
 
         # Zmiana rozmiaru list epsilon0s_ i epsilon_
-        self.epsilon0s = [self.epsilon0_] * self.numDimensions_
-        self.epsilon = [0.0] * self.numDimensions_
+        self.epsilon0s = [self.epsilon0_] * self.numDimensions
+        self.epsilon = [0.0] * self.numDimensions
 
         # Zmiana rozmiaru list p_, q_, u_, pProposal_, qProposal_
-        self.p = [0.0] * (2 * self.numDimensions_)
-        self.q = [0.0] * self.numDimensions_
-        self.u = [0.0] * (2 * self.numDimensions_)
-        self.pProposal = [0.0] * self.numDimensions_
-        self.qProposal = [0.0] * self.numDimensions_
+        self.p = [0.0] * (2 * self.numDimensions)
+        self.q = [0.0] * self.numDimensions
+        self.u = [0.0] * (2 * self.numDimensions)
+        self.pProposal = [0.0] * self.numDimensions
+        self.qProposal = [0.0] * self.numDimensions
 
         # Zmiana rozmiaru list probSum_ i integral_
-        self.probSum = [0.0] * (self.numChains_ * self.numBatches_)
-        self.integral = [0.0] * (self.numChains_ * self.numBatches_)
+        self.probSum = [0.0] * (self.numChains * self.numBatches)
+        self.integral = [0.0] * (self.numChains * self.numBatches)
 
         # Przypisanie wartości do integrand_
         self.integrand = g
