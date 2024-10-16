@@ -84,6 +84,11 @@ class SVfitIntegratorMarkovChain:
     def evalProb(self, q):
         return self.integrand(q, self.numDimensions, 0)
     
+    def updateX(self, q):
+        for iDimension in range(self.numDimensions):
+            q_i = q[iDimension]
+            self.x[iDimension] = (1 - q_i) * self.xMin[iDimension] + q_i * self.xMax[iDimension] 
+    
     def initializeStartPosition_and_Momentum(self):
         #Randomly choose start position of Markov Chain in N-dimensional space
         for iDimension in range(self.numDimensions):
@@ -248,3 +253,106 @@ class SVfitIntegratorMarkovChain:
 
         if self.verbosity >= 1:
             self.print()
+
+    def Print(self):
+        print("<SVfitIntegratorMarkovChain::print>:\n")
+        for iChain in range(self.numChains):
+            integral = 0
+            for iBatch in range(self.numBatches):
+                integral_i = self.integral[iChain * self.numBatches + iBatch]
+                ##//std::cout << "batch #" << iBatch << ": integral = " << integral_i << std::endl;
+                integral += integral_i
+            integral /= self.numBatches
+            ##//std::cout << "<integral> = " << integral << std::endl;
+            integralErr = 0
+            for iBatch in range(self.numBatches):
+                integral_i = self.integral[iChain * self.numBatches + iBatch]
+                integralErr += (integral_i - integral) ** 2
+            if self.numBatches >= 2:
+                integralErr /= (self.numBatches * (self.numBatches - 1))
+            integralErr = np.sqrt(integralErr)
+            print(f"chain #{iChain}: integral = {integral} +/- {integralErr}\n")
+        print(f"moves: accepted = {self.numMoves_accepted}, rejected = {self.numMoves_rejected} (fraction = {self.numMoves_accepted / (self.numMoves_accepted + self.numMoves_rejected) * 100}%)\n")
+
+    def sampleSphericallyRandom(self):
+        uMag2 = 0
+        for iDimension in range(2*self.numDimensions):
+            u_i = np.random.normal(0, 1)
+            self.u[iDimension] = u_i
+            uMag2 += u_i ** 2
+        uMag = np.sqrt(uMag2)
+        for iDimension in range(2*self.numDimensions):
+            self.u[iDimension] /= uMag
+
+
+    ##perform "stochastic" move
+    ##(eq. 24 in [2])
+    def makeStochasticMove(self, idxMove, isAccepted, isValid):
+        ##perform random updates of momentum components
+        if idxMove < self.num_iter_sim_annealing_phase1:
+            for iDimension in range(2*self.numDimensions):
+                self.p[iDimension] = np.sqrt(self.T0) * np.random.normal(0, 1)
+        elif idxMove < self.numIterSimAnnealingPhase1plus2:
+            pMag2 = 0
+            for iDimension in range(2*self.numDimensions):
+                p_i = self.p[iDimension]
+                pMag2 += p_i ** 2
+            pMag = np.sqrt(pMag2)
+            self.sampleSphericallyRandom()
+            for iDimension in range(2*self.numDimensions):
+                self.p[iDimension] = self.alpha * pMag * self.u[iDimension] + (1 - self.alpha2) * np.random.normal(0, 1)
+        else:
+            for iDimension in range(2*self.numDimensions):
+                self.p[iDimension] = np.random.normal(0, 1)
+        
+        ##choose random step size
+        exp_nu_times_C = 0
+        while exp_nu_times_C <= 0 or exp_nu_times_C >= 1e+6:
+            C = BreitWigner(0, 1) ### Do zaimportowania z jakiejś biblioteki
+            exp_nu_times_C = np.exp(self.nu * C)
+            if not (np.isnan(exp_nu_times_C) or not np.isfinite(exp_nu_times_C) or exp_nu_times_C > 1e6):
+                break
+
+        for iDimension in range(self.numDimensions):
+            self.epsilon[iDimension] = self.epsilon0s[iDimension] * exp_nu_times_C
+        
+        ##Metropolis algorithm: move according to eq. (27) in [2]
+
+        #update position components
+        #by single step of chosen size in direction of the momentum components
+        for iDimension in range(self.numDimensions):
+            self.qProposal[iDimension] = self.q[iDimension] + self.epsilon[iDimension] * self.p[iDimension]
+
+        #ensure that proposed new point is within integration region
+        #(take integration region to be "cyclic")
+        for iDimension in range(self.numDimensions):
+            q_i = self.qProposal[iDimension]
+            q_i = q_i - np.floor(q_i)
+            assert q_i >= 0 and q_i <= 1
+            self.qProposal[iDimension] = q_i
+
+        #check if proposed move of Markov Chain to new position is accepted or not:
+        #compute change in phase-space volume for "dummy" momentum components
+        #(eqs. 25 in [2])
+
+        probProposal = self.evalProb(self.qProposal)
+        deltaE = 0
+        if probProposal > 0 and self.prob > 0:
+            deltaE = -np.log(probProposal / self.prob)
+        elif probProposal > 0:
+            deltaE = -np.inf
+        elif self.prob > 0:
+            deltaE = np.inf
+        else:
+            assert 0
+        
+        #Metropolis algorithm: move according to eq. (13) in [2]
+        pAccept = np.exp(-deltaE)
+        u = np.random.uniform(0, 1)
+        if u < pAccept:
+            for iDimension in range(self.numDimensions):
+                self.q[iDimension] = self.qProposal[iDimension]
+            self.prob = probProposal
+            isAccepted = True
+        else:
+            isAccepted = False
