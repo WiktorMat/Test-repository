@@ -118,7 +118,7 @@ class SVfitIntegratorMarkovChain:
         if self.integrand_ is None:
             raise ValueError("<SVfitIntegratorMarkovChain>: No integrand function has been set yet --> ABORTING !!")
         
-        for i in range(self.numDimensions_):
+        for i in range(self.numDimensions):
             self.xMin[i] = xl[i]
             self.xMax[i] = xu[i]
             if self.verbosity >= 1:

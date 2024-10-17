@@ -6,11 +6,11 @@ class MeasuredTauLepton:
             self.type = MeasuredTauLepton.kUndefinedDecayType
         else:
             self.type = type
-        self.pt_ = pt
-        self.eta_ = eta
-        self.phi_ = phi
-        self.mass_ = mass
-        self.decayMode_ = decayMode
+        self.pt = pt
+        self.eta = eta
+        self.phi = phi
+        self.mass = mass
+        self.decayMode = decayMode
         if fullsetup:
             return
             #Zostawiam miejsce na pełen setup z drugiego konstruktora
@@ -25,5 +25,10 @@ class MeasuredTauLepton:
 
         return
 
-    
-    #Tu wznowimy następnym razem:)
+    def __copy__(self):
+        return
+        #Tu zrobimy konstruktor kopiujący
+
+    ###Destruktor
+
+    ##Dalej kod jest raczej prosty i głównie inicjalizuje, więc myślę, że to po prostu przepiszemy jeden do jednego

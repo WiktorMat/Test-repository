@@ -10,3 +10,7 @@ ClassicSVfitIntegrand:
     *Use_SVFITTF - gdzie jest definiowane?
     *hadTauTF i clone (linijka 113)
     *spojrzeć na to jak podnosimy błędy - pytanie czy chcemy, żeby błąd przerywał program (czyli czy chcemy robić print czy raise X_Error)
+
+MeasuredTauLepton:
+    *Tu nic ciekawego, zrobimy 1-1
+
